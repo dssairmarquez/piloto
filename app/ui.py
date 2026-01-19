@@ -37,7 +37,13 @@ PAGE_HTML = r"""
     header h1{ margin:0; font-size: 14px; letter-spacing:.2px; white-space:nowrap; }
     header .pill{ font-size: 12px; color: var(--muted); white-space:nowrap; }
 
-    .layout{ margin-top: 12px; display:grid; grid-template-columns: 320px 1fr; gap: 12px; min-height: calc(100vh - 90px); }
+    .layout{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap: 12px;
+      min-height: calc(100vh - 90px);
+    }
     @media(max-width: 980px){ .layout{ grid-template-columns: 1fr; } }
 
     .panel{
@@ -77,24 +83,89 @@ PAGE_HTML = r"""
     .btn-ghost{ opacity: .85; }
     .btn-ghost:hover{ opacity: 1; }
 
-    .list{
-      display:flex; flex-direction:column; gap: 8px;
-      max-height: calc(100vh - 230px); overflow:auto; padding-right: 2px;
-    }
-    @media(max-width: 980px){ .list{ max-height: 280px; } }
-
-    .item{
-      border: 1px solid var(--line); border-radius: 12px; padding: 10px;
-      background: rgba(11,18,32,.65); display:flex; align-items:flex-start;
-      justify-content:space-between; gap: 10px;
-    }
-    .item .meta{ font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .item .name{ font-size: 13px; font-weight: 700; line-height: 1.2; word-break: break-word; }
-
     .hint{ font-size: 12px; color: var(--muted); margin-top: 6px; }
 
-    .workspace{ display:flex; flex-direction:column; gap: 12px; }
+    /* Sidebar tree */
+    .treewrap{
+      height: calc(100vh - 230px);
+      overflow:auto;
+      padding-right: 2px;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+    @media(max-width: 980px){ .treewrap{ height: 320px; } }
 
+    .node{
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(11,18,32,.65);
+      overflow:hidden;
+    }
+    .node-hd{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px;
+      cursor:pointer;
+    }
+    .node-hd:hover{ background: rgba(96,165,250,.06); }
+    .node-hd.sel{ outline: 1px solid rgba(96,165,250,.55); }
+
+    .node-left{ min-width:0; display:flex; gap:10px; align-items:flex-start; }
+    .caret{
+      width: 18px; height: 18px; display:grid; place-items:center;
+      border: 1px solid var(--line); border-radius: 8px;
+      font-size: 12px; color: var(--muted);
+      background: rgba(0,0,0,.18);
+      margin-top: 1px;
+      flex: 0 0 auto;
+    }
+    .node-title{
+      font-weight: 800; font-size: 13px; line-height: 1.2;
+      word-break: break-word;
+    }
+    .node-meta{ font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .node-actions{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+    .iconbtn{
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+
+    .children{
+      border-top: 1px solid var(--line);
+      background: rgba(11,18,32,.35);
+      padding: 8px;
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+    }
+    .child{
+      border: 1px solid rgba(31,41,55,.9);
+      border-radius: 12px;
+      padding: 9px 10px;
+      background: rgba(11,18,32,.55);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      cursor:pointer;
+    }
+    .child:hover{ background: rgba(52,211,153,.06); }
+    .child.sel{ outline: 1px solid rgba(52,211,153,.55); }
+
+    .child .name{
+      font-weight: 800; font-size: 13px; min-width:0;
+      overflow:hidden; text-overflow: ellipsis; white-space:nowrap;
+    }
+    .child .meta{ font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .child .left{ min-width:0; display:flex; flex-direction:column; }
+    .child .right{ display:flex; gap: 8px; align-items:center; }
+
+    /* Main workspace */
+    .workspace{ display:flex; flex-direction:column; gap: 12px; }
     .topbar{
       display:flex; align-items:center; justify-content:space-between; gap: 10px;
       padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r);
@@ -114,13 +185,10 @@ PAGE_HTML = r"""
     .badge.good{ color: var(--good); border-color: rgba(52,211,153,.35); }
     .badge.muted{ color: var(--muted); }
 
-    .workgrid{ display:grid; grid-template-columns: 280px 1fr; gap: 12px; align-items: stretch; min-height: 540px; }
-    @media(max-width: 980px){ .workgrid{ grid-template-columns: 1fr; } }
-
     .chatpanel{
       border: 1px solid var(--line); border-radius: var(--r);
       background: rgba(17,24,39,.92); overflow:hidden;
-      display:flex; flex-direction:column; min-height: 540px;
+      display:flex; flex-direction:column; min-height: 560px;
     }
     .chatpanel .hd{
       display:flex; align-items:center; justify-content:space-between; gap: 10px;
@@ -132,26 +200,36 @@ PAGE_HTML = r"""
     }
 
     .chatbox{
-      flex: 1; overflow:auto; padding: 12px;
-      display:flex; flex-direction:column; gap: 10px;
+      flex: 1;
+      overflow:auto;
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
       background: rgba(11,18,32,.55);
+      scroll-behavior: smooth;
     }
     .bubble{
-      max-width: 92%; padding: 10px 12px; border-radius: 14px;
-      border: 1px solid var(--line); white-space: pre-wrap;
-      line-height: 1.35; font-size: 14px;
+      max-width: 92%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      line-height: 1.35;
+      font-size: 14px;
     }
     .bubble.user{
       align-self:flex-end; border-color: rgba(96,165,250,.35);
       background: rgba(96,165,250,.10);
     }
     .bubble.assistant{
+      white-space: pre-wrap;
       align-self:flex-start; background: rgba(148,163,184,.08);
     }
 
     /* “Paso” (evento) */
     .bubble.event{
-      align-self:flex-start; border-style: dashed;
+      align-self:flex-start;
+      border-style: dashed;
       background: rgba(251,191,36,.06);
       border-color: rgba(251,191,36,.35);
     }
@@ -164,12 +242,33 @@ PAGE_HTML = r"""
       border-color: rgba(251,113,133,.45);
     }
 
-    .bubble.code{
+    /* Bloques tipo ```bash ...``` (simple + limpio) */
+    .cmdblock{
+      margin-top: 8px;
+      border: 1px solid rgba(148,163,184,.22);
+      border-radius: 12px;
+      overflow:hidden;
+      background: rgba(0,0,0,.22);
+    }
+    .cmdblock .lang{
+      font-size: 11px;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(148,163,184,.15);
+      background: rgba(0,0,0,.18);
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+    .cmdblock pre{
+      margin: 0;
+      padding: 10px 10px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 12.5px;
-      background: rgba(0,0,0,.25);
-      border-color: rgba(148,163,184,.25);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.35;
     }
+    .cmdblock.out pre{ opacity: .95; }
 
     .composer{ border-top: 1px solid var(--line); padding: 10px 12px; background: rgba(17,24,39,.92); }
     .composer .row{ align-items:flex-end; }
@@ -227,10 +326,10 @@ PAGE_HTML = r"""
     </header>
 
     <div class="layout">
-      <!-- Sidebar: Projects -->
+      <!-- Sidebar: Tree -->
       <div class="panel">
         <div class="hd">
-          <div class="title">Proyectos</div>
+          <div class="title">Proyectos y chats</div>
           <div class="row">
             <button class="btn-ghost" onclick="refreshAll()">↻</button>
           </div>
@@ -240,8 +339,12 @@ PAGE_HTML = r"""
             <input id="projectName" placeholder="Nombre del proyecto"/>
             <button class="btn-accent" onclick="createProject()">Crear</button>
           </div>
-          <div class="list" id="projectsList"></div>
-          <div class="hint">Primero crea/elige un proyecto.</div>
+
+          <div class="treewrap" id="treeList"></div>
+
+          <div class="hint">
+            Click en un proyecto: selecciona + toggle. Click en un chat: abre.
+          </div>
         </div>
       </div>
 
@@ -251,6 +354,7 @@ PAGE_HTML = r"""
           <div class="project" id="projectTitle">Selecciona un proyecto</div>
           <div class="actions">
             <span class="badge muted" id="activeContextsPill">0 contextos activos</span>
+            <button class="btn-good" onclick="createChat()" title="Nuevo chat">+ Chat</button>
             <button class="btn-accent" onclick="openContextsModal()">Contextos</button>
             <button class="btn-bad" onclick="deleteProject()">Eliminar proyecto</button>
             <button class="btn-ghost" onclick="goHome()">Inicio</button>
@@ -262,35 +366,20 @@ PAGE_HTML = r"""
         </div>
 
         <div id="projectPanel" style="display:none;">
-          <div class="workgrid">
-            <!-- Chats list -->
-            <div class="panel">
-              <div class="hd">
-                <div class="title">Chats</div>
-                <button class="btn-good" onclick="createChat()">+ Nuevo</button>
-              </div>
-              <div class="bd">
-                <div class="list" id="chatsList"></div>
-                <div class="hint">Selecciona un chat para abrirlo.</div>
-              </div>
+          <div class="chatpanel">
+            <div class="hd">
+              <div class="ctitle" id="chatTitle">Selecciona un chat</div>
             </div>
 
-            <!-- Chat big -->
-            <div class="chatpanel">
-              <div class="hd">
-                <div class="ctitle" id="chatTitle">Selecciona un chat</div>
+            <div class="chatbox" id="chatBox"></div>
+
+            <div class="composer">
+              <div class="row">
+                <textarea id="msgInput" placeholder="Escribe tu mensaje..."></textarea>
+                <button id="sendBtn" class="btn-good" onclick="sendMessage()" style="min-width: 110px;">Enviar</button>
               </div>
-
-              <div class="chatbox" id="chatBox"></div>
-
-              <div class="composer">
-                <div class="row">
-                  <textarea id="msgInput" placeholder="Escribe tu mensaje..."></textarea>
-                  <button id="sendBtn" class="btn-good" onclick="sendMessage()" style="min-width: 110px;">Enviar</button>
-                </div>
-                <div class="hint">
-                  Modo agente: verás plan/comandos/output en tiempo real. Si no hay API key, verás el error al enviar.
-                </div>
+              <div class="hint">
+                Modo agente: verás plan/comandos/output en tiempo real.
               </div>
             </div>
           </div>
@@ -333,7 +422,7 @@ PAGE_HTML = r"""
               <button class="btn-ghost" onclick="reloadProjectContexts()">↻</button>
             </div>
 
-            <div class="list" id="projectContextsList"></div>
+            <div class="treewrap" id="projectContextsList" style="height: auto; max-height: 360px;"></div>
           </div>
 
           <!-- Right: groups -->
@@ -346,7 +435,7 @@ PAGE_HTML = r"""
                   <button class="btn-good" onclick="createGroup()">Crear</button>
                 </div>
 
-                <div class="list" id="groupsList" style="max-height: 240px;"></div>
+                <div class="treewrap" id="groupsList" style="height: auto; max-height: 240px;"></div>
 
                 <div class="hint">Selecciona un grupo para editar sus contextos.</div>
 
@@ -380,11 +469,12 @@ PAGE_HTML = r"""
     selectedChatId: null,
     selectedGroupId: null,
     projects: [],
-    chats: [],
+    chatsByProject: {},      // { [projectId]: { loaded: bool, chats: [] } }
     messages: [],
     projectContexts: [],
     groups: [],
-    allContexts: []
+    allContexts: [],
+    expandedProjects: new Set()
   };
 
   const $ = (id) => document.getElementById(id);
@@ -437,52 +527,138 @@ PAGE_HTML = r"""
     $("emptyPanel").style.display = show ? "none" : "block";
   }
 
-  function renderProjects(){
-    const list = $("projectsList");
+  function getProjectNode(projectId){
+    const key = String(projectId);
+    if(!state.chatsByProject[key]){
+      state.chatsByProject[key] = { loaded: false, chats: [] };
+    }
+    return state.chatsByProject[key];
+  }
+
+  async function ensureChatsLoaded(projectId){
+    const node = getProjectNode(projectId);
+    if(node.loaded) return;
+    node.chats = await api(`/api/projects/${projectId}/chats`);
+    node.loaded = true;
+  }
+
+  async function refreshProjectChats(projectId){
+    const node = getProjectNode(projectId);
+    node.chats = await api(`/api/projects/${projectId}/chats`);
+    node.loaded = true;
+  }
+
+  function renderTree(){
+    const list = $("treeList");
     list.innerHTML = "";
+
     for(const p of state.projects){
       const isSel = (p.id === state.selectedProjectId);
-      const el = document.createElement("div");
-      el.className = "item";
-      el.style.borderColor = isSel ? "rgba(96,165,250,.55)" : "";
-      el.innerHTML = `
-        <div style="min-width:0;">
-          <div class="name">${esc(p.name)}</div>
-          <div class="meta">#${p.id} · ${esc(p.created_at)}</div>
+      const isOpen = state.expandedProjects.has(p.id);
+      const node = document.createElement("div");
+      node.className = "node";
+
+      const hd = document.createElement("div");
+      hd.className = "node-hd" + (isSel ? " sel" : "");
+      hd.onclick = () => toggleProjectNode(p.id);
+
+      const caret = isOpen ? "▾" : "▸";
+
+      hd.innerHTML = `
+        <div class="node-left">
+          <div class="caret">${caret}</div>
+          <div style="min-width:0;">
+            <div class="node-title">${esc(p.name)}</div>
+            <div class="node-meta">#${p.id} · ${esc(p.created_at)}</div>
+          </div>
         </div>
-        <div class="row">
-          <button class="btn-ghost" onclick="selectProject(${p.id})">${isSel ? "✓" : "Abrir"}</button>
+        <div class="node-actions">
+          <button class="btn-ghost iconbtn" title="Actualizar chats" onclick="event.stopPropagation(); reloadProjectChats(${p.id})">↻</button>
         </div>
       `;
-      list.appendChild(el);
+      node.appendChild(hd);
+
+      if(isOpen){
+        const children = document.createElement("div");
+        children.className = "children";
+
+        const projNode = getProjectNode(p.id);
+        const chats = projNode.chats || [];
+
+        // hint dentro
+        if(!projNode.loaded){
+          children.innerHTML = `<div class="hint">Cargando chats…</div>`;
+        }else if(chats.length === 0){
+          children.innerHTML = `<div class="hint">No hay chats. Crea uno con “+ Chat”.</div>`;
+        }else{
+          for(const ch of chats){
+            const isChatSel = (ch.id === state.selectedChatId);
+            const child = document.createElement("div");
+            child.className = "child" + (isChatSel ? " sel" : "");
+            child.onclick = () => selectChat(ch.id);
+
+            child.innerHTML = `
+              <div class="left">
+                <div class="name">${esc(ch.title)}</div>
+                <div class="meta">#${ch.id} · ${esc(ch.created_at)}</div>
+              </div>
+              <div class="right">
+                <button class="btn-bad iconbtn" title="Eliminar chat" onclick="event.stopPropagation(); deleteChat(${ch.id})">🗑</button>
+              </div>
+            `;
+            children.appendChild(child);
+          }
+        }
+
+        node.appendChild(children);
+      }
+
+      list.appendChild(node);
     }
+
     if(state.projects.length === 0){
       list.innerHTML = `<div class="hint">No hay proyectos. Crea el primero arriba.</div>`;
     }
   }
 
-  function renderChats(){
-    const list = $("chatsList");
-    list.innerHTML = "";
-    for(const ch of state.chats){
-      const isSel = (ch.id === state.selectedChatId);
-      const el = document.createElement("div");
-      el.className = "item";
-      el.style.borderColor = isSel ? "rgba(52,211,153,.55)" : "";
-      el.innerHTML = `
-        <div style="min-width:0;">
-          <div class="name">${esc(ch.title)}</div>
-          <div class="meta">#${ch.id} · ${esc(ch.created_at)}</div>
-        </div>
-        <div class="row" style="flex-wrap:wrap; justify-content:flex-end;">
-          <button class="btn-ghost" onclick="selectChat(${ch.id})">${isSel ? "✓" : "Abrir"}</button>
-          <button class="btn-bad" onclick="deleteChat(${ch.id})">Eliminar</button>
-        </div>
-      `;
-      list.appendChild(el);
+  async function toggleProjectNode(projectId){
+    const wasOpen = state.expandedProjects.has(projectId);
+
+    // Siempre seleccionar el proyecto al click
+    if(state.selectedProjectId !== projectId){
+      await selectProject(projectId, { autoExpand: true });
+      return;
     }
-    if(state.chats.length === 0){
-      list.innerHTML = `<div class="hint">No hay chats. Crea uno con “Nuevo”.</div>`;
+
+    // Toggle open/close
+    if(wasOpen) state.expandedProjects.delete(projectId);
+    else state.expandedProjects.add(projectId);
+
+    // Si abrimos, cargamos chats
+    if(!wasOpen){
+      try{
+        setStatus("Cargando chats…");
+        await ensureChatsLoaded(projectId);
+      }catch(e){
+        toast("Error: " + e.message);
+      }finally{
+        setStatus("Listo");
+      }
+    }
+
+    renderTree();
+  }
+
+  async function reloadProjectChats(projectId){
+    try{
+      setStatus("Actualizando chats…");
+      await refreshProjectChats(projectId);
+      renderTree();
+      toast("Chats actualizados");
+    }catch(e){
+      toast("Error: " + e.message);
+    }finally{
+      setStatus("Listo");
     }
   }
 
@@ -520,7 +696,7 @@ PAGE_HTML = r"""
       el.innerHTML = `
         <div class="left">
           <div style="font-weight:800;">${esc(c.name)}</div>
-          <div class="meta" style="white-space:pre-wrap;">${esc(c.content)}</div>
+          <div class="meta" style="white-space:pre-wrap; color: var(--muted); font-size:12px;">${esc(c.content)}</div>
         </div>
         <div class="right">
           <span class="tag ${isActive ? "active" : ""}">${isActive ? "ACTIVO" : "INACTIVO"}</span>
@@ -543,16 +719,19 @@ PAGE_HTML = r"""
     for(const g of state.groups){
       const isSel = g.id === state.selectedGroupId;
       const el = document.createElement("div");
-      el.className = "item";
-      el.style.borderColor = isSel ? "rgba(96,165,250,.55)" : "";
+      el.className = "node";
       el.innerHTML = `
-        <div style="min-width:0;">
-          <div class="name">${esc(g.name)}</div>
-          <div class="meta">#${g.id} · ${esc(g.created_at)}</div>
-        </div>
-        <div class="row" style="flex-wrap:wrap; justify-content:flex-end;">
-          <button class="btn-ghost" onclick="selectGroup(${g.id})">${isSel ? "✓" : "Editar"}</button>
-          <button class="btn-bad" onclick="deleteGroup(${g.id})">Borrar</button>
+        <div class="node-hd ${isSel ? "sel" : ""}" onclick="selectGroup(${g.id})">
+          <div class="node-left">
+            <div class="caret">≡</div>
+            <div style="min-width:0;">
+              <div class="node-title">${esc(g.name)}</div>
+              <div class="node-meta">#${g.id} · ${esc(g.created_at)}</div>
+            </div>
+          </div>
+          <div class="node-actions">
+            <button class="btn-bad iconbtn" onclick="event.stopPropagation(); deleteGroup(${g.id})">🗑</button>
+          </div>
         </div>
       `;
       list.appendChild(el);
@@ -577,10 +756,15 @@ PAGE_HTML = r"""
     setStatus("Cargando…");
     try{
       state.projects = await api("/api/projects");
-      renderProjects();
+
+      // Mantener expansión/selección razonable
+      // (no tocar expandedProjects si ya existía)
+      renderTree();
+
       if(state.selectedProjectId){
-        await loadProject(state.selectedProjectId);
+        await loadProject(state.selectedProjectId, { silentTree: true });
       }
+
       toast("Actualizado");
     }catch(e){
       toast("Error: " + e.message);
@@ -604,28 +788,40 @@ PAGE_HTML = r"""
     }
   }
 
-  async function selectProject(id){
+  async function selectProject(id, opts={ autoExpand:false }){
     state.selectedProjectId = id;
     state.selectedChatId = null;
-    renderProjects();
+    state.messages = [];
+    $("chatTitle").textContent = "Selecciona un chat";
+    renderMessages();
+
+    if(opts.autoExpand){
+      state.expandedProjects.add(id);
+    }
+
     await loadProject(id);
   }
 
-  async function loadProject(id){
+  async function loadProject(id, opts={ silentTree:false }){
     setStatus("Cargando proyecto…");
     try{
       const project = await api(`/api/projects/${id}`);
       $("projectTitle").textContent = "Proyecto: " + project.name;
       showProjectPanel(true);
 
-      state.chats = await api(`/api/projects/${id}/chats`);
-      state.messages = [];
-      renderChats();
-      renderMessages();
-      $("chatTitle").textContent = "Selecciona un chat";
+      // cargar chats del proyecto seleccionado
+      await ensureChatsLoaded(id);
 
+      // contexts
       state.projectContexts = await api(`/api/projects/${id}/contexts`);
       renderContextsPreview();
+
+      if(!opts.silentTree){
+        renderTree();
+      }else{
+        // aun en silent, si el proyecto seleccionado está expandido, refleja chats
+        renderTree();
+      }
 
       toast("Proyecto cargado");
     }catch(e){
@@ -640,10 +836,10 @@ PAGE_HTML = r"""
     state.selectedChatId = null;
     $("projectTitle").textContent = "Selecciona un proyecto";
     showProjectPanel(false);
-    renderProjects();
     $("activeContextsPill").textContent = "0 contextos activos";
     $("activeContextsPill").classList.remove("good");
     $("activeContextsPill").classList.add("muted");
+    renderTree();
   }
 
   async function deleteProject(){
@@ -653,8 +849,14 @@ PAGE_HTML = r"""
     setStatus("Eliminando…");
     try{
       await api(`/api/projects/${state.selectedProjectId}`, { method:"DELETE" });
+
+      // limpiar estado asociado
+      state.expandedProjects.delete(state.selectedProjectId);
+      delete state.chatsByProject[String(state.selectedProjectId)];
+
       state.selectedProjectId = null;
       state.selectedChatId = null;
+
       await refreshAll();
       goHome();
       toast("Proyecto eliminado");
@@ -678,9 +880,14 @@ PAGE_HTML = r"""
         method:"POST",
         body: JSON.stringify({title: clean})
       });
-      state.chats = await api(`/api/projects/${state.selectedProjectId}/chats`);
-      renderChats();
+
+      await refreshProjectChats(state.selectedProjectId);
+
+      // Asegurar expandido y abrir chat recién creado
+      state.expandedProjects.add(state.selectedProjectId);
+      renderTree();
       await selectChat(r.id);
+
       toast("Chat creado");
     }catch(e){
       toast("Error: " + e.message);
@@ -695,14 +902,16 @@ PAGE_HTML = r"""
     setStatus("Eliminando chat…");
     try{
       await api(`/api/chats/${chatId}`, { method:"DELETE" });
+
       if(state.selectedChatId === chatId){
         state.selectedChatId = null;
         state.messages = [];
         renderMessages();
         $("chatTitle").textContent = "Selecciona un chat";
       }
-      state.chats = await api(`/api/projects/${state.selectedProjectId}/chats`);
-      renderChats();
+
+      await refreshProjectChats(state.selectedProjectId);
+      renderTree();
       toast("Chat eliminado");
     }catch(e){
       toast("Error: " + e.message);
@@ -713,7 +922,8 @@ PAGE_HTML = r"""
 
   async function selectChat(id){
     state.selectedChatId = id;
-    renderChats();
+    renderTree();
+
     setStatus("Cargando chat…");
     try{
       const chat = await api(`/api/chats/${id}`);
@@ -742,14 +952,22 @@ PAGE_HTML = r"""
   function addStepBubble(stepNum, command){
     const box = $("chatBox");
     const div = document.createElement("div");
-    div.className = "bubble event code";
+    div.className = "bubble event";
     div.dataset.step = String(stepNum);
     div.dataset.done = "0";
-    div.textContent =
-`[PASO ${stepNum}] Ejecutando comando:
-${command}
 
-[OUTPUT] (pendiente...)`;
+    const cmdEsc = esc(command || "");
+    div.innerHTML = `
+      <div style="font-weight:800;">[PASO ${stepNum}] Ejecutando comando</div>
+      <div class="cmdblock">
+        <div class="lang">bash</div>
+        <pre>${cmdEsc}</pre>
+      </div>
+      <div class="cmdblock out" style="margin-top:10px;">
+        <div class="lang">output</div>
+        <pre>[pendiente...]</pre>
+      </div>
+    `;
     box.appendChild(div);
     scrollChatToBottom();
     return div;
@@ -763,7 +981,12 @@ ${command}
     div.classList.add(ok ? "good" : "bad");
 
     const status = ok ? "OK" : "ERROR";
-    div.textContent = div.textContent.replace("[OUTPUT] (pendiente...)", `[OUTPUT ${status}]\n${output || "(sin output)"}`);
+    const out = esc(output || "(sin output)");
+
+    const outPre = div.querySelector(".cmdblock.out pre");
+    if(outPre){
+      outPre.textContent = `[${status}]\n${output || "(sin output)"}`;
+    }
     scrollChatToBottom();
   }
 
@@ -835,21 +1058,17 @@ ${command}
           const out = payload?.result?.output ?? "";
           const ok = !!payload?.result?.ok;
 
-          // Intentamos emparejar por comando; fallback al último paso
           const div = stepsByCommand.get(cmd) || lastStepDiv;
           completeStepBubble(div, ok, out);
           return;
         }
 
         if(ev === "error"){
-          // Error como un “paso” aparte para que no se pierda
           stepCounter += 1;
           const div = addStepBubble(stepCounter, "(error del agente)");
           completeStepBubble(div, false, payload.text || "error");
           return;
         }
-
-        // status/final/done: no necesitamos render aparte (opcional)
       }
 
       while(true){
@@ -870,9 +1089,8 @@ ${command}
       toast("Listo");
     }catch(e){
       toast("Error: " + e.message);
-      // Mostrar también como paso final para que quede en el flujo
       const div = document.createElement("div");
-      div.className = "bubble event bad code";
+      div.className = "bubble event bad";
       div.textContent = `[ERROR]\n${e.message || String(e)}`;
       $("chatBox").appendChild(div);
       scrollChatToBottom();
