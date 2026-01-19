@@ -148,12 +148,22 @@ PAGE_HTML = r"""
     .bubble.assistant{
       align-self:flex-start; background: rgba(148,163,184,.08);
     }
+
+    /* “Paso” (evento) */
     .bubble.event{
       align-self:flex-start; border-style: dashed;
       background: rgba(251,191,36,.06);
       border-color: rgba(251,191,36,.35);
     }
-    .bubble.event .small{ font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .bubble.event.good{
+      background: rgba(52,211,153,.07);
+      border-color: rgba(52,211,153,.45);
+    }
+    .bubble.event.bad{
+      background: rgba(251,113,133,.07);
+      border-color: rgba(251,113,133,.45);
+    }
+
     .bubble.code{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 12.5px;
@@ -729,14 +739,32 @@ PAGE_HTML = r"""
     return div;
   }
 
-  function addEventBubble(title, body, code=false){
+  function addStepBubble(stepNum, command){
     const box = $("chatBox");
     const div = document.createElement("div");
-    div.className = "bubble event" + (code ? " code" : "");
-    div.textContent = title + "\n" + body;
+    div.className = "bubble event code";
+    div.dataset.step = String(stepNum);
+    div.dataset.done = "0";
+    div.textContent =
+`[PASO ${stepNum}] Ejecutando comando:
+${command}
+
+[OUTPUT] (pendiente...)`;
     box.appendChild(div);
     scrollChatToBottom();
     return div;
+  }
+
+  function completeStepBubble(div, ok, output){
+    if(!div) return;
+    div.dataset.done = "1";
+    div.classList.remove("good");
+    div.classList.remove("bad");
+    div.classList.add(ok ? "good" : "bad");
+
+    const status = ok ? "OK" : "ERROR";
+    div.textContent = div.textContent.replace("[OUTPUT] (pendiente...)", `[OUTPUT ${status}]\n${output || "(sin output)"}`);
+    scrollChatToBottom();
   }
 
   async function sendMessage(){
@@ -749,11 +777,15 @@ PAGE_HTML = r"""
 
     try{
       $("msgInput").value = "";
-      // Mostrar el user inmediatamente
       addBubble("user", text);
 
-      // Bubble del asistente que iremos llenando (chunks)
+      // Bubble del asistente en vivo (solo texto normal)
       const liveAssistant = addBubble("assistant", "");
+
+      // Estado por streaming de pasos
+      let stepCounter = 0;
+      const stepsByCommand = new Map(); // command -> div
+      let lastStepDiv = null;
 
       const res = await fetch(`/api/chats/${state.selectedChatId}/agent-stream`, {
         method:"POST",
@@ -771,7 +803,6 @@ PAGE_HTML = r"""
       let buffer = "";
 
       function handleSSEBlock(block){
-        // block contiene varias líneas, buscamos event + data
         const lines = block.split("\n").filter(Boolean);
         let ev = "message";
         let dataLine = null;
@@ -784,29 +815,41 @@ PAGE_HTML = r"""
         let payload = {};
         try{ payload = JSON.parse(dataLine); }catch(e){ payload = {text: dataLine}; }
 
-        if(ev === "status"){
-          // opcional: mostrar estado como bubble ligera
-          // liveAssistant se mantiene
-        }
         if(ev === "assistant_chunk"){
           liveAssistant.textContent += payload.text || "";
           scrollChatToBottom();
+          return;
         }
+
         if(ev === "tool_call"){
-          addEventBubble("[COMANDO]", payload.command || "", true);
+          const cmd = payload.command || "";
+          stepCounter += 1;
+          const div = addStepBubble(stepCounter, cmd);
+          stepsByCommand.set(cmd, div);
+          lastStepDiv = div;
+          return;
         }
+
         if(ev === "tool_output"){
+          const cmd = payload.command || "";
           const out = payload?.result?.output ?? "";
-          const ok = payload?.result?.ok ? "OK" : "ERROR";
-          addEventBubble(`[OUTPUT ${ok}]`, out || "(sin output)", true);
+          const ok = !!payload?.result?.ok;
+
+          // Intentamos emparejar por comando; fallback al último paso
+          const div = stepsByCommand.get(cmd) || lastStepDiv;
+          completeStepBubble(div, ok, out);
+          return;
         }
-        if(ev === "final"){
-          // el final ya puede venir duplicado respecto a chunks; no pasa nada.
-          // si quieres reemplazar: liveAssistant.textContent = payload.text;
-        }
+
         if(ev === "error"){
-          addEventBubble("[ERROR]", payload.text || "error", true);
+          // Error como un “paso” aparte para que no se pierda
+          stepCounter += 1;
+          const div = addStepBubble(stepCounter, "(error del agente)");
+          completeStepBubble(div, false, payload.text || "error");
+          return;
         }
+
+        // status/final/done: no necesitamos render aparte (opcional)
       }
 
       while(true){
@@ -814,7 +857,6 @@ PAGE_HTML = r"""
         if(done) break;
         buffer += decoder.decode(value, {stream:true});
 
-        // SSE separa eventos por doble salto de línea
         let idx;
         while((idx = buffer.indexOf("\n\n")) >= 0){
           const block = buffer.slice(0, idx);
@@ -825,11 +867,15 @@ PAGE_HTML = r"""
 
       // refrescar mensajes guardados en DB para mantener consistencia al recargar
       state.messages = await api(`/api/chats/${state.selectedChatId}/messages`);
-      // renderMessages(); // opcional; si lo haces, perderás las burbujas "evento" del streaming.
       toast("Listo");
     }catch(e){
       toast("Error: " + e.message);
-      addEventBubble("[ERROR]", e.message || String(e), true);
+      // Mostrar también como paso final para que quede en el flujo
+      const div = document.createElement("div");
+      div.className = "bubble event bad code";
+      div.textContent = `[ERROR]\n${e.message || String(e)}`;
+      $("chatBox").appendChild(div);
+      scrollChatToBottom();
     }finally{
       disableSend(false);
       setStatus("Listo");
