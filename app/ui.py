@@ -7,251 +7,296 @@ PAGE_HTML = r"""
   <title>MiniGPT Projects</title>
   <style>
     :root{
-      --bg:#0b0f17; --card:#111827; --muted:#94a3b8; --text:#e5e7eb;
-      --line:#1f2937; --accent:#60a5fa; --good:#34d399; --bad:#fb7185;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r:16px;
+      --bg:#0b0f17;
+      --panel:#111827;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --line:#1f2937;
+      --accent:#60a5fa;
+      --good:#34d399;
+      --bad:#fb7185;
+      --warn:#fbbf24;
+      --r:14px;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
-      background: radial-gradient(1200px 600px at 20% -20%, rgba(96,165,250,.25), transparent),
-                  radial-gradient(900px 500px at 90% 0%, rgba(52,211,153,.16), transparent),
-                  var(--bg);
-      color:var(--text);
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
     }
-    .wrap{max-width:1200px; margin:0 auto; padding:18px}
-    header{
-      display:flex; align-items:center; gap:12px; justify-content:space-between;
-      padding:12px 14px; border:1px solid var(--line); border-radius:var(--r);
-      background: rgba(17,24,39,.85); box-shadow: var(--shadow);
-      position: sticky; top: 10px; backdrop-filter: blur(10px); z-index: 10;
-    }
-    header h1{font-size:16px; margin:0; letter-spacing:.3px}
-    header .pill{font-size:12px; color:var(--muted)}
-    .grid{display:grid; gap:14px; margin-top:14px}
-    @media(min-width:980px){ .grid{grid-template-columns: 320px 1fr} }
+    .wrap{ max-width: 1320px; margin: 0 auto; padding: 14px; }
 
-    .card{
-      border:1px solid var(--line); border-radius:var(--r); background: rgba(17,24,39,.85);
-      box-shadow: var(--shadow); overflow:hidden;
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap: 10px;
+      padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r);
+      background: rgba(17,24,39,.92); position: sticky; top: 10px; z-index: 10;
+      backdrop-filter: blur(10px);
     }
-    .card .hd{
-      padding:12px 14px; border-bottom:1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    header .left{ display:flex; align-items:center; gap:10px; min-width: 0; }
+    header h1{ margin:0; font-size: 14px; letter-spacing:.2px; white-space:nowrap; }
+    header .pill{ font-size: 12px; color: var(--muted); white-space:nowrap; }
+
+    .layout{ margin-top: 12px; display:grid; grid-template-columns: 320px 1fr; gap: 12px; min-height: calc(100vh - 90px); }
+    @media(max-width: 980px){ .layout{ grid-template-columns: 1fr; } }
+
+    .panel{
+      border: 1px solid var(--line); border-radius: var(--r);
+      background: rgba(17,24,39,.92); overflow:hidden; min-height: 120px;
     }
-    .card .hd h2{margin:0; font-size:13px; color:var(--muted); font-weight:600; text-transform: uppercase; letter-spacing:.9px}
-    .card .bd{padding:12px 14px}
-    .row{display:flex; gap:10px; align-items:center}
-    .col{display:flex; flex-direction:column; gap:10px}
+    .panel .hd{
+      display:flex; align-items:center; justify-content:space-between; gap: 10px;
+      padding: 10px 12px; border-bottom: 1px solid var(--line);
+    }
+    .panel .hd .title{
+      font-size: 12px; text-transform: uppercase; letter-spacing: .9px;
+      color: var(--muted); font-weight: 700;
+    }
+    .panel .bd{ padding: 10px 12px; }
+
     input, textarea, select{
-      width:100%; padding:10px 10px; border-radius:12px; border:1px solid var(--line);
-      background:#0b1220; color:var(--text); outline:none;
+      width:100%; padding: 10px 10px; border-radius: 12px;
+      border: 1px solid var(--line); background: #0b1220; color: var(--text); outline:none;
     }
-    textarea{min-height:96px; resize:vertical}
+    textarea{ resize: vertical; min-height: 52px; }
+
+    .row{ display:flex; gap: 8px; align-items:center; }
+    .col{ display:flex; flex-direction:column; gap: 10px; }
+
     button{
-      padding:10px 12px; border-radius:12px; border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(96,165,250,.22), rgba(96,165,250,.12));
-      color:var(--text); cursor:pointer; transition: transform .08s ease, border-color .15s ease, opacity .15s ease;
-      user-select:none;
+      padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line);
+      background: transparent; color: var(--text); cursor:pointer;
+      transition: border-color .15s ease, transform .08s ease, opacity .15s ease;
+      user-select:none; white-space:nowrap;
     }
-    button:hover{transform: translateY(-1px); border-color: rgba(96,165,250,.5)}
-    button:disabled{opacity:.5; cursor:not-allowed; transform:none}
-    .btn-ghost{ background: transparent; }
-    .btn-good{
-      background: linear-gradient(180deg, rgba(52,211,153,.22), rgba(52,211,153,.12));
-    }
-    .btn-bad{
-      background: linear-gradient(180deg, rgba(251,113,133,.22), rgba(251,113,133,.12));
-    }
+    button:hover{ transform: translateY(-1px); border-color: rgba(96,165,250,.55); }
+    button:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+    .btn-accent{ border-color: rgba(96,165,250,.45); }
+    .btn-good{ border-color: rgba(52,211,153,.45); }
+    .btn-bad{ border-color: rgba(251,113,133,.45); }
+    .btn-ghost{ opacity: .85; }
+    .btn-ghost:hover{ opacity: 1; }
+
     .list{
-      display:flex; flex-direction:column; gap:8px;
-      max-height: 440px; overflow:auto; padding-right:4px;
+      display:flex; flex-direction:column; gap: 8px;
+      max-height: calc(100vh - 230px); overflow:auto; padding-right: 2px;
     }
+    @media(max-width: 980px){ .list{ max-height: 280px; } }
+
     .item{
-      border:1px solid var(--line); border-radius:14px; padding:10px 10px; background: rgba(11,18,32,.75);
-      display:flex; flex-direction:column; gap:8px;
+      border: 1px solid var(--line); border-radius: 12px; padding: 10px;
+      background: rgba(11,18,32,.65); display:flex; align-items:flex-start;
+      justify-content:space-between; gap: 10px;
     }
-    .item .top{display:flex; align-items:center; justify-content:space-between; gap:10px}
-    .item .title{font-weight:650; font-size:13px}
-    .item .meta{font-size:12px; color:var(--muted)}
-    .tag{
-      font-size:11px; color:#0b0f17; background: rgba(52,211,153,.95);
-      padding:4px 8px; border-radius:999px; font-weight:700; letter-spacing:.2px;
+    .item .meta{ font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .item .name{ font-size: 13px; font-weight: 700; line-height: 1.2; word-break: break-word; }
+
+    .hint{ font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .workspace{ display:flex; flex-direction:column; gap: 12px; }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap: 10px;
+      padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r);
+      background: rgba(17,24,39,.92);
     }
-    .tag.inactive{background: rgba(148,163,184,.9)}
-    .split{display:grid; gap:12px}
-    @media(min-width:900px){ .split{grid-template-columns: 1fr 1fr} }
+    .topbar .project{
+      font-weight: 800; font-size: 14px; min-width: 0;
+      overflow:hidden; text-overflow: ellipsis; white-space:nowrap;
+    }
+    .topbar .actions{ display:flex; gap: 8px; align-items:center; flex-wrap: wrap; justify-content:flex-end; }
+
+    .badge{
+      font-size: 12px; color: var(--muted); border: 1px solid var(--line);
+      padding: 6px 10px; border-radius: 999px; background: rgba(11,18,32,.55);
+      white-space:nowrap;
+    }
+    .badge.good{ color: var(--good); border-color: rgba(52,211,153,.35); }
+    .badge.muted{ color: var(--muted); }
+
+    .workgrid{ display:grid; grid-template-columns: 280px 1fr; gap: 12px; align-items: stretch; min-height: 540px; }
+    @media(max-width: 980px){ .workgrid{ grid-template-columns: 1fr; } }
+
+    .chatpanel{
+      border: 1px solid var(--line); border-radius: var(--r);
+      background: rgba(17,24,39,.92); overflow:hidden;
+      display:flex; flex-direction:column; min-height: 540px;
+    }
+    .chatpanel .hd{
+      display:flex; align-items:center; justify-content:space-between; gap: 10px;
+      padding: 10px 12px; border-bottom: 1px solid var(--line);
+    }
+    .chatpanel .hd .ctitle{
+      font-weight: 800; font-size: 13px; color: var(--text);
+      min-width: 0; overflow:hidden; text-overflow: ellipsis; white-space:nowrap;
+    }
 
     .chatbox{
-      height: 520px; overflow:auto; border:1px solid var(--line); border-radius: 16px;
-      padding: 12px; background: rgba(11,18,32,.65);
-      display:flex; flex-direction:column; gap:10px;
+      flex: 1; overflow:auto; padding: 12px;
+      display:flex; flex-direction:column; gap: 10px;
+      background: rgba(11,18,32,.55);
     }
     .bubble{
-      max-width: 86%; padding:10px 12px; border-radius: 16px;
-      border:1px solid var(--line);
-      white-space: pre-wrap; line-height:1.35; font-size:14px;
+      max-width: 92%; padding: 10px 12px; border-radius: 14px;
+      border: 1px solid var(--line); white-space: pre-wrap;
+      line-height: 1.35; font-size: 14px;
     }
-    .bubble.user{align-self:flex-end; background: rgba(96,165,250,.12); border-color: rgba(96,165,250,.28)}
-    .bubble.assistant{align-self:flex-start; background: rgba(148,163,184,.10)}
+    .bubble.user{
+      align-self:flex-end; border-color: rgba(96,165,250,.35);
+      background: rgba(96,165,250,.10);
+    }
+    .bubble.assistant{
+      align-self:flex-start; background: rgba(148,163,184,.08);
+    }
+    .bubble.event{
+      align-self:flex-start; border-style: dashed;
+      background: rgba(251,191,36,.06);
+      border-color: rgba(251,191,36,.35);
+    }
+    .bubble.event .small{ font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .bubble.code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12.5px;
+      background: rgba(0,0,0,.25);
+      border-color: rgba(148,163,184,.25);
+    }
+
+    .composer{ border-top: 1px solid var(--line); padding: 10px 12px; background: rgba(17,24,39,.92); }
+    .composer .row{ align-items:flex-end; }
+    .composer textarea{ min-height: 56px; max-height: 180px; }
+
     .toast{
-      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
-      background: rgba(17,24,39,.92); border:1px solid var(--line); color:var(--text);
-      padding:10px 12px; border-radius: 999px; box-shadow: var(--shadow);
-      font-size: 13px; opacity:0; pointer-events:none; transition: opacity .15s ease;
-      max-width: 92vw;
-      z-index: 50;
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(17,24,39,.95); border: 1px solid var(--line);
+      color: var(--text); padding: 10px 12px; border-radius: 999px;
+      font-size: 13px; opacity: 0; pointer-events:none;
+      transition: opacity .15s ease; max-width: 92vw; z-index: 50;
     }
-    .toast.show{opacity:1}
-    .hint{font-size:12px; color:var(--muted); margin-top:8px}
-    .divider{height:1px; background: var(--line); margin: 12px 0}
-    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-         font-size: 11px; padding: 2px 6px; border-radius: 8px; border:1px solid var(--line);
-         background: rgba(11,18,32,.8); color: var(--muted)}
+    .toast.show{ opacity: 1; }
 
     /* Modal */
     .modal-backdrop{
-      position: fixed; inset:0; background: rgba(0,0,0,.55);
-      display:none; align-items:center; justify-content:center;
-      z-index: 40;
-      padding: 18px;
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      display:none; align-items:center; justify-content:center; z-index: 40; padding: 16px;
     }
     .modal{
-      width: min(1100px, 98vw);
-      max-height: 92vh;
-      overflow:auto;
-      border:1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(17,24,39,.92);
-      box-shadow: var(--shadow);
+      width: min(1100px, 98vw); max-height: 92vh; overflow:auto;
+      border: 1px solid var(--line); border-radius: 16px; background: rgba(17,24,39,.96);
     }
     .modal .mhd{
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      position: sticky; top: 0;
-      background: rgba(17,24,39,.96);
-      backdrop-filter: blur(10px);
+      padding: 10px 12px; border-bottom: 1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap: 10px;
+      position: sticky; top: 0; background: rgba(17,24,39,.98);
+      backdrop-filter: blur(10px); z-index: 1;
     }
-    .modal .mbd{ padding: 12px 14px; }
-    .chip{
-      border: 1px solid var(--line);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      color: var(--muted);
-      background: rgba(11,18,32,.55);
-    }
+    .modal .mbd{ padding: 10px 12px; }
+    .split{ display:grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+    @media(max-width: 980px){ .split{ grid-template-columns: 1fr; } }
     .toggle{
-      display:flex; align-items:center; justify-content:space-between;
-      border:1px solid var(--line); border-radius:14px; padding:10px;
-      background: rgba(11,18,32,.70);
-      gap:12px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap: 10px;
+      border: 1px solid var(--line); border-radius: 12px; padding: 10px;
+      background: rgba(11,18,32,.60);
     }
-    .toggle .left{display:flex; flex-direction:column; gap:4px}
-    .toggle .right{display:flex; gap:8px; align-items:center}
+    .toggle .left{ display:flex; flex-direction:column; gap: 4px; }
+    .toggle .right{ display:flex; flex-wrap: wrap; gap: 8px; align-items:center; justify-content:flex-end; }
+    .tag{
+      font-size: 11px; padding: 4px 8px; border-radius: 999px;
+      border: 1px solid var(--line); color: var(--muted); white-space: nowrap;
+    }
+    .tag.active{ color: var(--good); border-color: rgba(52,211,153,.35); }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="row" style="gap:10px;">
+      <div class="left">
         <h1>MiniGPT Projects</h1>
         <span class="pill" id="statusPill">Listo</span>
       </div>
-      <div class="row" style="gap:8px;">
-        <span class="pill">Atajos: <span class="kbd">Ctrl</span>+<span class="kbd">K</span> nuevo chat · <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> enviar</span>
-      </div>
+      <div class="pill">Atajos: Ctrl+K nuevo chat · Ctrl+Enter enviar · Esc cerrar modal</div>
     </header>
 
-    <div class="grid">
-      <!-- Left -->
-      <div class="card">
+    <div class="layout">
+      <!-- Sidebar: Projects -->
+      <div class="panel">
         <div class="hd">
-          <h2>Proyectos</h2>
-          <button class="btn-ghost" onclick="refreshAll()">↻</button>
+          <div class="title">Proyectos</div>
+          <div class="row">
+            <button class="btn-ghost" onclick="refreshAll()">↻</button>
+          </div>
         </div>
         <div class="bd col">
           <div class="row">
             <input id="projectName" placeholder="Nombre del proyecto"/>
-            <button onclick="createProject()">Crear</button>
+            <button class="btn-accent" onclick="createProject()">Crear</button>
           </div>
           <div class="list" id="projectsList"></div>
-          <div class="hint">Primero crea/elige un proyecto. Dentro podrás crear chats y gestionar contextos globales.</div>
+          <div class="hint">Primero crea/elige un proyecto.</div>
         </div>
       </div>
 
-      <!-- Right -->
-      <div class="card">
-        <div class="hd">
-          <h2 id="projectTitle">Selecciona un proyecto</h2>
-          <div class="row">
+      <!-- Main: Workspace -->
+      <div class="workspace">
+        <div class="topbar">
+          <div class="project" id="projectTitle">Selecciona un proyecto</div>
+          <div class="actions">
+            <span class="badge muted" id="activeContextsPill">0 contextos activos</span>
+            <button class="btn-accent" onclick="openContextsModal()">Contextos</button>
+            <button class="btn-bad" onclick="deleteProject()">Eliminar proyecto</button>
             <button class="btn-ghost" onclick="goHome()">Inicio</button>
           </div>
         </div>
-        <div class="bd">
-          <div id="projectPanel" style="display:none;">
-            <div class="split">
-              <!-- Contexts summary -->
-              <div class="col">
-                <div class="row" style="justify-content:space-between;">
-                  <div style="font-weight:700;">Contextos</div>
-                  <span class="pill" id="activeContextsPill">0 activos</span>
-                </div>
 
-                <div class="item">
-                  <div class="title">Gestión</div>
-                  <div class="meta">Los contextos son globales y se activan/desactivan por proyecto.</div>
-                  <div class="row">
-                    <button class="btn-good" onclick="openContextsModal()">Gestionar contextos</button>
-                    <button class="btn-bad" onclick="deleteProject()">Eliminar proyecto</button>
-                  </div>
-                  <div class="hint">Consejo: puedes activar varios contextos a la vez.</div>
-                </div>
+        <div id="emptyPanel" class="hint" style="display:block; padding: 6px 2px;">
+          Elige un proyecto a la izquierda para ver sus chats.
+        </div>
 
-                <div class="list" id="contextsPreviewList"></div>
+        <div id="projectPanel" style="display:none;">
+          <div class="workgrid">
+            <!-- Chats list -->
+            <div class="panel">
+              <div class="hd">
+                <div class="title">Chats</div>
+                <button class="btn-good" onclick="createChat()">+ Nuevo</button>
+              </div>
+              <div class="bd">
+                <div class="list" id="chatsList"></div>
+                <div class="hint">Selecciona un chat para abrirlo.</div>
+              </div>
+            </div>
+
+            <!-- Chat big -->
+            <div class="chatpanel">
+              <div class="hd">
+                <div class="ctitle" id="chatTitle">Selecciona un chat</div>
               </div>
 
-              <!-- Chats -->
-              <div class="col">
-                <div class="row" style="justify-content:space-between;">
-                  <div style="font-weight:700;">Chats</div>
-                  <button class="btn-good" onclick="createChat()">+ Nuevo chat</button>
-                </div>
+              <div class="chatbox" id="chatBox"></div>
 
-                <div class="list" id="chatsList"></div>
-
-                <div class="divider"></div>
-
-                <div style="font-weight:700; margin-bottom:8px;" id="chatTitle">Selecciona un chat</div>
-                <div class="chatbox" id="chatBox"></div>
-                <div class="row" style="margin-top:10px;">
-                  <textarea id="msgInput" placeholder="Escribe tu mensaje... (Ctrl+Enter para enviar)" style="min-height:52px;"></textarea>
-                  <button id="sendBtn" onclick="sendMessage()" style="min-width:120px;">Enviar</button>
+              <div class="composer">
+                <div class="row">
+                  <textarea id="msgInput" placeholder="Escribe tu mensaje..."></textarea>
+                  <button id="sendBtn" class="btn-good" onclick="sendMessage()" style="min-width: 110px;">Enviar</button>
                 </div>
                 <div class="hint">
-                  Si no hay API key, verás el error al enviar.
+                  Modo agente: verás plan/comandos/output en tiempo real. Si no hay API key, verás el error al enviar.
                 </div>
               </div>
             </div>
           </div>
-
-          <div id="emptyPanel" class="hint" style="display:block;">
-            Elige un proyecto a la izquierda para ver sus contextos y chats.
-          </div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Contexts Modal -->
   <div class="modal-backdrop" id="ctxModalBackdrop" onclick="modalBackdropClick(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="mhd">
         <div class="row" style="gap:10px;">
           <div style="font-weight:800;">Contextos globales</div>
-          <span class="chip" id="ctxModalProjectChip">Proyecto: -</span>
+          <span class="badge" id="ctxModalProjectChip">Proyecto: -</span>
         </div>
         <div class="row">
           <button class="btn-ghost" onclick="closeContextsModal()">Cerrar</button>
@@ -261,50 +306,55 @@ PAGE_HTML = r"""
         <div class="split">
           <!-- Left: contexts -->
           <div class="col">
-            <div class="item">
-              <div class="title">Crear contexto global</div>
-              <input id="ctxName" placeholder="Nombre (ej: 'Soporte técnico')"/>
-              <textarea id="ctxContent" placeholder="Contenido del contexto: reglas, tono, datos, etc."></textarea>
-              <div class="row">
-                <button class="btn-good" onclick="createGlobalContext()">Guardar</button>
-                <button class="btn-ghost" onclick="fillExampleContext()">Ejemplo</button>
+            <div class="panel">
+              <div class="hd"><div class="title">Crear contexto</div></div>
+              <div class="bd col">
+                <input id="ctxName" placeholder="Nombre (ej: 'Soporte técnico')"/>
+                <textarea id="ctxContent" placeholder="Contenido del contexto..."></textarea>
+                <div class="row" style="justify-content:flex-end;">
+                  <button class="btn-ghost" onclick="fillExampleContext()">Ejemplo</button>
+                  <button class="btn-good" onclick="createGlobalContext()">Guardar</button>
+                </div>
               </div>
             </div>
 
-            <div class="row" style="justify-content:space-between;">
-              <div style="font-weight:700;">Activar/desactivar en este proyecto</div>
+            <div class="row" style="justify-content:space-between; margin-top: 8px;">
+              <div style="font-weight:800; font-size: 13px;">Activar/desactivar en este proyecto</div>
               <button class="btn-ghost" onclick="reloadProjectContexts()">↻</button>
             </div>
+
             <div class="list" id="projectContextsList"></div>
           </div>
 
           <!-- Right: groups -->
           <div class="col">
-            <div class="item">
-              <div class="title">Crear grupo</div>
-              <input id="groupName" placeholder="Nombre del grupo (ej: 'Ecommerce')"/>
-              <div class="row">
-                <button class="btn-good" onclick="createGroup()">Crear grupo</button>
-              </div>
-              <div class="hint">Los grupos organizan contextos existentes.</div>
-            </div>
+            <div class="panel">
+              <div class="hd"><div class="title">Grupos</div></div>
+              <div class="bd col">
+                <div class="row">
+                  <input id="groupName" placeholder="Nombre del grupo (ej: 'Ecommerce')"/>
+                  <button class="btn-good" onclick="createGroup()">Crear</button>
+                </div>
 
-            <div class="row" style="justify-content:space-between;">
-              <div style="font-weight:700;">Grupos</div>
-              <button class="btn-ghost" onclick="reloadGroups()">↻</button>
-            </div>
-            <div class="list" id="groupsList"></div>
+                <div class="list" id="groupsList" style="max-height: 240px;"></div>
 
-            <div class="item">
-              <div class="title">Editar grupo: <span id="selectedGroupLabel" style="color:var(--muted)">(ninguno)</span></div>
-              <div class="meta">Selecciona un grupo arriba para editar sus contextos.</div>
-              <select id="groupContextsSelect" multiple size="10"></select>
-              <div class="row">
-                <button class="btn-good" onclick="saveGroupItems()">Guardar contexts del grupo</button>
-                <button class="btn-ghost" onclick="activateSelectedGroup(true)">Activar grupo en proyecto</button>
-                <button class="btn-ghost" onclick="activateSelectedGroup(false)">Desactivar grupo en proyecto</button>
+                <div class="hint">Selecciona un grupo para editar sus contextos.</div>
+
+                <div class="row" style="justify-content:space-between; align-items:center;">
+                  <div style="font-weight:800; font-size: 13px;">Editar grupo</div>
+                  <span class="badge" id="selectedGroupLabel">(ninguno)</span>
+                </div>
+
+                <select id="groupContextsSelect" multiple size="10"></select>
+
+                <div class="row" style="flex-wrap:wrap; justify-content:flex-end;">
+                  <button class="btn-ghost" onclick="activateSelectedGroup(false)">Desactivar en proyecto</button>
+                  <button class="btn-ghost" onclick="activateSelectedGroup(true)">Activar en proyecto</button>
+                  <button class="btn-good" onclick="saveGroupItems()">Guardar grupo</button>
+                </div>
+
+                <div class="hint">Tip: Ctrl/Cmd para seleccionar varios.</div>
               </div>
-              <div class="hint">Tip: Ctrl/Cmd para seleccionar varios en el select.</div>
             </div>
           </div>
         </div>
@@ -322,7 +372,7 @@ PAGE_HTML = r"""
     projects: [],
     chats: [],
     messages: [],
-    projectContexts: [], // global contexts + active flag for project
+    projectContexts: [],
     groups: [],
     allContexts: []
   };
@@ -372,7 +422,11 @@ PAGE_HTML = r"""
     return res.json();
   }
 
-  // ---------- Render ----------
+  function showProjectPanel(show){
+    $("projectPanel").style.display = show ? "block" : "none";
+    $("emptyPanel").style.display = show ? "none" : "block";
+  }
+
   function renderProjects(){
     const list = $("projectsList");
     list.innerHTML = "";
@@ -382,14 +436,12 @@ PAGE_HTML = r"""
       el.className = "item";
       el.style.borderColor = isSel ? "rgba(96,165,250,.55)" : "";
       el.innerHTML = `
-        <div class="top">
-          <div>
-            <div class="title">${esc(p.name)}</div>
-            <div class="meta">#${p.id} · ${esc(p.created_at)}</div>
-          </div>
-          <div class="row">
-            <button class="btn-ghost" onclick="selectProject(${p.id})">${isSel ? "✓" : "Abrir"}</button>
-          </div>
+        <div style="min-width:0;">
+          <div class="name">${esc(p.name)}</div>
+          <div class="meta">#${p.id} · ${esc(p.created_at)}</div>
+        </div>
+        <div class="row">
+          <button class="btn-ghost" onclick="selectProject(${p.id})">${isSel ? "✓" : "Abrir"}</button>
         </div>
       `;
       list.appendChild(el);
@@ -408,21 +460,19 @@ PAGE_HTML = r"""
       el.className = "item";
       el.style.borderColor = isSel ? "rgba(52,211,153,.55)" : "";
       el.innerHTML = `
-        <div class="top">
-          <div>
-            <div class="title">${esc(ch.title)}</div>
-            <div class="meta">#${ch.id} · ${esc(ch.created_at)}</div>
-          </div>
-          <div class="row">
-            <button class="btn-ghost" onclick="selectChat(${ch.id})">${isSel ? "✓" : "Abrir"}</button>
-            <button class="btn-bad" onclick="deleteChat(${ch.id})">Eliminar</button>
-          </div>
+        <div style="min-width:0;">
+          <div class="name">${esc(ch.title)}</div>
+          <div class="meta">#${ch.id} · ${esc(ch.created_at)}</div>
+        </div>
+        <div class="row" style="flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn-ghost" onclick="selectChat(${ch.id})">${isSel ? "✓" : "Abrir"}</button>
+          <button class="btn-bad" onclick="deleteChat(${ch.id})">Eliminar</button>
         </div>
       `;
       list.appendChild(el);
     }
     if(state.chats.length === 0){
-      list.innerHTML = `<div class="hint">No hay chats. Crea uno con “Nuevo chat”.</div>`;
+      list.innerHTML = `<div class="hint">No hay chats. Crea uno con “Nuevo”.</div>`;
     }
   }
 
@@ -442,32 +492,12 @@ PAGE_HTML = r"""
   }
 
   function renderContextsPreview(){
-    const list = $("contextsPreviewList");
-    list.innerHTML = "";
     const active = state.projectContexts.filter(x => x.is_active === 1);
-    $("activeContextsPill").textContent = `${active.length} activos`;
-    $("activeContextsPill").style.color = active.length ? "var(--good)" : "var(--muted)";
-
-    if(active.length === 0){
-      list.innerHTML = `<div class="hint">No hay contextos activos. Abre el modal para activar alguno.</div>`;
-      return;
-    }
-
-    for(const c of active){
-      const el = document.createElement("div");
-      el.className = "item";
-      el.innerHTML = `
-        <div class="top">
-          <div>
-            <div class="title">${esc(c.name)}</div>
-            <div class="meta">${esc(c.created_at)}</div>
-          </div>
-          <span class="tag">ACTIVO</span>
-        </div>
-        <div class="meta" style="white-space:pre-wrap;">${esc(c.content)}</div>
-      `;
-      list.appendChild(el);
-    }
+    const pill = $("activeContextsPill");
+    pill.textContent = `${active.length} contextos activos`;
+    pill.classList.remove("good");
+    pill.classList.remove("muted");
+    pill.classList.add(active.length ? "good" : "muted");
   }
 
   function renderProjectContextsModal(){
@@ -479,11 +509,11 @@ PAGE_HTML = r"""
       el.className = "toggle";
       el.innerHTML = `
         <div class="left">
-          <div style="font-weight:750;">${esc(c.name)}</div>
+          <div style="font-weight:800;">${esc(c.name)}</div>
           <div class="meta" style="white-space:pre-wrap;">${esc(c.content)}</div>
         </div>
         <div class="right">
-          <span class="${isActive ? "tag" : "tag inactive"}">${isActive ? "ACTIVO" : "INACTIVO"}</span>
+          <span class="tag ${isActive ? "active" : ""}">${isActive ? "ACTIVO" : "INACTIVO"}</span>
           <button class="${isActive ? "btn-ghost" : "btn-good"}" onclick="toggleProjectContext(${c.id}, ${isActive ? "false" : "true"})">
             ${isActive ? "Desactivar" : "Activar"}
           </button>
@@ -506,15 +536,13 @@ PAGE_HTML = r"""
       el.className = "item";
       el.style.borderColor = isSel ? "rgba(96,165,250,.55)" : "";
       el.innerHTML = `
-        <div class="top">
-          <div>
-            <div class="title">${esc(g.name)}</div>
-            <div class="meta">#${g.id} · ${esc(g.created_at)}</div>
-          </div>
-          <div class="row">
-            <button class="btn-ghost" onclick="selectGroup(${g.id})">${isSel ? "✓" : "Editar"}</button>
-            <button class="btn-bad" onclick="deleteGroup(${g.id})">Borrar</button>
-          </div>
+        <div style="min-width:0;">
+          <div class="name">${esc(g.name)}</div>
+          <div class="meta">#${g.id} · ${esc(g.created_at)}</div>
+        </div>
+        <div class="row" style="flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn-ghost" onclick="selectGroup(${g.id})">${isSel ? "✓" : "Editar"}</button>
+          <button class="btn-bad" onclick="deleteGroup(${g.id})">Borrar</button>
         </div>
       `;
       list.appendChild(el);
@@ -535,12 +563,6 @@ PAGE_HTML = r"""
     }
   }
 
-  function showProjectPanel(show){
-    $("projectPanel").style.display = show ? "block" : "none";
-    $("emptyPanel").style.display = show ? "none" : "block";
-  }
-
-  // ---------- Actions ----------
   async function refreshAll(){
     setStatus("Cargando…");
     try{
@@ -592,7 +614,6 @@ PAGE_HTML = r"""
       renderMessages();
       $("chatTitle").textContent = "Selecciona un chat";
 
-      // contexts preview
       state.projectContexts = await api(`/api/projects/${id}/contexts`);
       renderContextsPreview();
 
@@ -610,6 +631,9 @@ PAGE_HTML = r"""
     $("projectTitle").textContent = "Selecciona un proyecto";
     showProjectPanel(false);
     renderProjects();
+    $("activeContextsPill").textContent = "0 contextos activos";
+    $("activeContextsPill").classList.remove("good");
+    $("activeContextsPill").classList.add("muted");
   }
 
   async function deleteProject(){
@@ -694,31 +718,118 @@ PAGE_HTML = r"""
     }
   }
 
+  // ---------- AGENT STREAMING ----------
+  function addBubble(role, text, cls=""){
+    const box = $("chatBox");
+    const div = document.createElement("div");
+    div.className = "bubble " + (role === "user" ? "user" : "assistant") + (cls ? " " + cls : "");
+    div.textContent = text;
+    box.appendChild(div);
+    scrollChatToBottom();
+    return div;
+  }
+
+  function addEventBubble(title, body, code=false){
+    const box = $("chatBox");
+    const div = document.createElement("div");
+    div.className = "bubble event" + (code ? " code" : "");
+    div.textContent = title + "\n" + body;
+    box.appendChild(div);
+    scrollChatToBottom();
+    return div;
+  }
+
   async function sendMessage(){
     if(!state.selectedChatId){ toast("Selecciona un chat"); return; }
     const text = $("msgInput").value.trim();
     if(!text){ toast("Escribe un mensaje"); return; }
 
     disableSend(true);
-    setStatus("Pensando…");
+    setStatus("Agente trabajando…");
+
     try{
       $("msgInput").value = "";
+      // Mostrar el user inmediatamente
+      addBubble("user", text);
 
-      state.messages.push({role:"user", content:text});
-      renderMessages();
+      // Bubble del asistente que iremos llenando (chunks)
+      const liveAssistant = addBubble("assistant", "");
 
-      await api(`/api/chats/${state.selectedChatId}/messages`, {
+      const res = await fetch(`/api/chats/${state.selectedChatId}/agent-stream`, {
         method:"POST",
-        body: JSON.stringify({content:text})
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({content: text})
       });
 
+      if(!res.ok){
+        const t = await res.text();
+        throw new Error(t);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      function handleSSEBlock(block){
+        // block contiene varias líneas, buscamos event + data
+        const lines = block.split("\n").filter(Boolean);
+        let ev = "message";
+        let dataLine = null;
+        for(const ln of lines){
+          if(ln.startsWith("event:")) ev = ln.slice(6).trim();
+          if(ln.startsWith("data:")) dataLine = ln.slice(5).trim();
+        }
+        if(!dataLine) return;
+
+        let payload = {};
+        try{ payload = JSON.parse(dataLine); }catch(e){ payload = {text: dataLine}; }
+
+        if(ev === "status"){
+          // opcional: mostrar estado como bubble ligera
+          // liveAssistant se mantiene
+        }
+        if(ev === "assistant_chunk"){
+          liveAssistant.textContent += payload.text || "";
+          scrollChatToBottom();
+        }
+        if(ev === "tool_call"){
+          addEventBubble("[COMANDO]", payload.command || "", true);
+        }
+        if(ev === "tool_output"){
+          const out = payload?.result?.output ?? "";
+          const ok = payload?.result?.ok ? "OK" : "ERROR";
+          addEventBubble(`[OUTPUT ${ok}]`, out || "(sin output)", true);
+        }
+        if(ev === "final"){
+          // el final ya puede venir duplicado respecto a chunks; no pasa nada.
+          // si quieres reemplazar: liveAssistant.textContent = payload.text;
+        }
+        if(ev === "error"){
+          addEventBubble("[ERROR]", payload.text || "error", true);
+        }
+      }
+
+      while(true){
+        const { value, done } = await reader.read();
+        if(done) break;
+        buffer += decoder.decode(value, {stream:true});
+
+        // SSE separa eventos por doble salto de línea
+        let idx;
+        while((idx = buffer.indexOf("\n\n")) >= 0){
+          const block = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          if(block.trim().length) handleSSEBlock(block);
+        }
+      }
+
+      // refrescar mensajes guardados en DB para mantener consistencia al recargar
       state.messages = await api(`/api/chats/${state.selectedChatId}/messages`);
-      renderMessages();
-      toast("Respuesta lista");
+      // renderMessages(); // opcional; si lo haces, perderás las burbujas "evento" del streaming.
+      toast("Listo");
     }catch(e){
       toast("Error: " + e.message);
-      state.messages.push({role:"assistant", content:"Error: " + e.message});
-      renderMessages();
+      addEventBubble("[ERROR]", e.message || String(e), true);
     }finally{
       disableSend(false);
       setStatus("Listo");
@@ -748,14 +859,13 @@ PAGE_HTML = r"""
   }
 
   function fillExampleContext(){
-    $("ctxName").value = "Asistente de producto";
+    $("ctxName").value = "Entorno de ejecución";
     $("ctxContent").value =
-`Eres un asistente especializado en ayudar a usuarios a usar este producto.
-Reglas:
-- Da pasos accionables y claros.
-- Si hay ambigüedad, pregunta 1-2 cosas como máximo.
-- Si el usuario pide código, entrega un ejemplo mínimo + mejores prácticas.
-Tono: cercano, profesional y breve.`;
+`IMPORTANTE: Este proyecto permite ejecutar comandos de consola.
+- Tipo de consola: Linux (bash) / Windows (PowerShell o CMD) -> especifica cuál.
+- Directorio base de trabajo, si aplica.
+- Restricciones, si las hay (opcional).
+- Objetivo: el agente debe planear y ejecutar por pasos, mostrando comando y output.`;
   }
 
   async function reloadAllContexts(){
@@ -821,7 +931,6 @@ Tono: cercano, profesional y breve.`;
     }
   }
 
-  // ---------- Groups ----------
   async function reloadGroups(){
     state.groups = await api("/api/context-groups");
     renderGroups();
@@ -871,7 +980,6 @@ Tono: cercano, profesional y breve.`;
       const items = await api(`/api/context-groups/${groupId}/items`);
       $("selectedGroupLabel").textContent = "#" + groupId;
 
-      // set selected options
       const selected = new Set((items.context_ids || []).map(String));
       const sel = $("groupContextsSelect");
       for(const opt of sel.options){
