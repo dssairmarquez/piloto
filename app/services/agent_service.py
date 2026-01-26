@@ -326,9 +326,22 @@ class AgentService:
             return rel_cwd if rel_cwd else "."
 
         # Normaliza separadores
+        # up = up.replace("\\", "/").lstrip("/")
+        # if rel_cwd and rel_cwd != ".":
+        #     return f"{rel_cwd}/{up}"
+        # return up
+    
+        # Normaliza separadores
         up = up.replace("\\", "/").lstrip("/")
+
+        # Si el usuario ya dio un path relativo al ROOT (ej: "prueba_terraform/main.tf"),
+        # no lo volvemos a prefijar con el cwd.
         if rel_cwd and rel_cwd != ".":
+            # up ya incluye el cwd (o está "dentro" de ese prefijo)
+            if up == rel_cwd or up.startswith(rel_cwd + "/"):
+                return up
             return f"{rel_cwd}/{up}"
+
         return up
 
     def _handle_cd(self, chat_id: int, cmd: str) -> dict[str, Any] | None:
@@ -373,7 +386,11 @@ class AgentService:
         instructions = self._build_instructions(project_id)
 
         # Siempre empezamos desde root (evita arrastre raro entre tareas)
-        self._set_chat_cwd(chat_id, self.root)
+        #self._set_chat_cwd(chat_id, self.root)
+
+        # Mantener cwd persistente por chat.
+        # Si no hay cwd aún, inicializamos en root.
+        _ = self._get_chat_cwd(chat_id)
 
         self.visible.start_if_needed()
         self.visible.append(f"\n[CHAT #{chat_id}] User: {user_text}\n")
